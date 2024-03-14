@@ -1,0 +1,33 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>part 0 fullstackopen topocai</title>
+</head>
+<body>
+    <h1>Part 0 simple page</h1>
+    <form action="/new_contact" method="post" class="form-container">
+        <fieldset>
+            <legend><strong>Tus datos de contacto</strong></legend>
+            <ul>
+                <li>
+                    <label for="name">Name:</label>
+                    <input type="text" name="user_name" id="name"/>
+                </li>
+                <li>
+                    <label for="email">Email:</label>
+                    <input type="email" name="user_email" id="email"/>
+                </li>
+                <li>
+                    <label for="phone">Telephone:</label>
+                    <input type="tel" name="user_phone" id="phone"/>
+                </li>
+                <li class="button-container">
+                    <button type="submit">send contact info</button>
+                </li>
+            </ul>
+        </fieldset>
+    </form>
+</body>
+</html>
