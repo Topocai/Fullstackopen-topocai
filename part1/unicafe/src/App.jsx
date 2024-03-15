@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-
-
 const ButtonFeedback = ({text, onClick}) => <button onClick={onClick}>{text}</button>
 
 const StaticsLine = ({text, value}) => {
