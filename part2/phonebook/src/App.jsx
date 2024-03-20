@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
+
 import FilterInput from './modules/filterInput';
 import ContactList from './modules/contactList';
 import ContactForm from './modules/contactForm';
+import Notification from './modules/notification';
 
 import contactServices from './services/contacts.js'
+
+import './index.css'
 
 const App = () => {
 
@@ -19,6 +23,12 @@ const App = () => {
 
   const [newContact, setNewContact] = useState({name: '', number: null, id: undefined})
   const [filter, setFilter] = useState('');
+  const [notificationState, setNotificationState] = useState({message: null, color: null});
+
+  const showNotification = (message, color) => {
+    setNotificationState({message, color})
+    setTimeout(() => setNotificationState({message: null, color: null}), 5000)
+  }
   
   const onNameHandler = (event) => 
   {
@@ -45,10 +55,16 @@ const App = () => {
   }
 
   const removeContactHandler = (id) => {
-    if(window.confirm(`Delete ${persons.find(person => person.id === id).name}?`)) 
+    const confirm = window.confirm(`Delete ${persons.find(person => person.id === id).name}?`);
+    const refresh = () => setPersons(persons.filter(person => person.id !== id));
+    if(confirm) 
     {
       contactServices.removeContact(id)
-      .then(() => setPersons(persons.filter(person => person.id !== id)))
+      .then(() => refresh())
+      .catch(() => {
+        showNotification(`Information of ${persons.find(person => person.id === id).name} has already been removed from server`, 'red')
+        refresh();
+      })
     } else {}
   }
 
@@ -59,29 +75,29 @@ const App = () => {
     if(!isNaN(newContact.name)) return alert('Name cant be only numbers')
     
     const isExisting = persons.find(person => person.name === newContact.name || person.number === newContact.number);
+    const refresh = (updatedContact) => setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact));
 
-    if(isExisting && isExisting.number == newContact.number) 
+    if(isExisting) 
     {
-      const confirm = window.confirm(`${isExisting.number} is already added to phonebook, replace the old name with a new one?`);
+      const dataToUpdate = isExisting.number == newContact.number ? {...isExisting, name: newContact.name} : {...isExisting, number: newContact.number};
+      const confirm = window.confirm(`${isExisting.number == newContact.number ? isExisting.number: isExisting.name} is already added to phonebook, replace the old name with a new one?`)
+      
       if(confirm) 
       {
-        contactServices.updateContact(isExisting.id, {...isExisting, name: newContact.name})
-        .then(updatedContact => setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact)))
+        contactServices.updateContact(isExisting.id, dataToUpdate)
+        .then(updatedContact => {
+          refresh(updatedContact)
+          showNotification(`Updated '${updatedContact.name}'`)
+        })
       }
     }
-    else if(isExisting && isExisting.name == newContact.name) 
-    {
-      const confirm = window.confirm(`${isExisting.name} is already added to phonebook, replace the old number with a new one?`);
-      if(confirm)
-      {
-        contactServices.updateContact(isExisting.id, {...isExisting, number: newContact.number})
-        .then(updatedContact => setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact)))
-      } else {}
-    } 
     else if (!isExisting) 
     {
       contactServices.addContact(newContact)
-      .then(contact => setPersons(persons.concat(contact)))
+      .then(contact => {
+        setPersons(persons.concat(contact))
+        showNotification(`Added '${contact.name}'`)
+      })
     }
 
     
@@ -90,6 +106,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationState.message} color={notificationState.color} />
       <FilterInput onFilterHandler={onFilterHandler} />
       <h2>Add a new</h2>
       <ContactForm onSubmitHandler={onSubmitHandler} onNameHandler={onNameHandler} onNumberHandler={onNumberHandler}/> 
