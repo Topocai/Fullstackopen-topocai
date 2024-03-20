@@ -1,52 +1,89 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FilterInput from './modules/filterInput';
 import ContactList from './modules/contactList';
 import ContactForm from './modules/contactForm';
 
+import contactServices from './services/contacts.js'
+
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+
+  const [persons, setPersons] = useState([])
+
+  const contactFetch = () => 
+  {
+    contactServices.getAll()
+    .then(contacts => setPersons(contacts))
+  }
+
+  useEffect(contactFetch, []);
+
   const [newContact, setNewContact] = useState({name: '', number: null, id: undefined})
   const [filter, setFilter] = useState('');
   
-  const onNameHandler = (event) => {
-    const value = event.target.value;
-    const newId = persons.length + 1;
-    setNewContact({...newContact, name: value, id: newId})
+  const onNameHandler = (event) => 
+  {
+    let value = event.target.value;
+    value = value.trim();
+    setNewContact({...newContact, name: value})
 
-    console.log(newContact)
+    console.log("Name changer", newContact)
   }
 
-  const onNumberHandler = (event) => {
+  const onNumberHandler = (event) => 
+  {
     const value = event.target.value;
-    const newId = persons.length + 1;
-    setNewContact({...newContact, number: value, id: newId})
+    setNewContact({...newContact, number: value})
 
-    console.log(newContact)
+    console.log("Number changer", newContact)
   }
 
-  const onFilterHandler = (event) => {
-    
+  const onFilterHandler = (event) => 
+  {
     const value = event.target.value;
-    console.log(value)
     setFilter(value)
+    console.log("Filter Changer", filter)
   }
 
-  const onSubmitHandler = (event) => {
-    event.preventDefault()
+  const removeContactHandler = (id) => {
+    if(window.confirm(`Delete ${persons.find(person => person.id === id).name}?`)) 
+    {
+      contactServices.removeContact(id)
+      .then(() => setPersons(persons.filter(person => person.id !== id)))
+    } else {}
+  }
 
+  const onSubmitHandler = (event) => 
+  {
+    event.preventDefault()
 
     if(!isNaN(newContact.name)) return alert('Name cant be only numbers')
     
-    const isExisting = persons.find(person => person.name === newContact.name || person.number === newContact.number)
-    if(isExisting && isExisting.number == newContact.number) return alert(`Number ${newContact.number} is already added to phonebook as ${isExisting.name}`)
-    else if(isExisting && isExisting.name == newContact.name) return alert(`${newContact.name} is already added to phonebook with number ${isExisting.number}`)
+    const isExisting = persons.find(person => person.name === newContact.name || person.number === newContact.number);
 
-    setPersons(persons.concat(newContact))
+    if(isExisting && isExisting.number == newContact.number) 
+    {
+      const confirm = window.confirm(`${isExisting.number} is already added to phonebook, replace the old name with a new one?`);
+      if(confirm) 
+      {
+        contactServices.updateContact(isExisting.id, {...isExisting, name: newContact.name})
+        .then(updatedContact => setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact)))
+      }
+    }
+    else if(isExisting && isExisting.name == newContact.name) 
+    {
+      const confirm = window.confirm(`${isExisting.name} is already added to phonebook, replace the old number with a new one?`);
+      if(confirm)
+      {
+        contactServices.updateContact(isExisting.id, {...isExisting, number: newContact.number})
+        .then(updatedContact => setPersons(persons.map(person => person.id !== updatedContact.id ? person : updatedContact)))
+      } else {}
+    } 
+    else if (!isExisting) 
+    {
+      contactServices.addContact(newContact)
+      .then(contact => setPersons(persons.concat(contact)))
+    }
+
     
   }
 
@@ -57,7 +94,7 @@ const App = () => {
       <h2>Add a new</h2>
       <ContactForm onSubmitHandler={onSubmitHandler} onNameHandler={onNameHandler} onNumberHandler={onNumberHandler}/> 
       <h2>Numbers</h2>
-      <ContactList persons={persons} filter={filter} />
+      <ContactList persons={persons} filter={filter} removeContactHandler={removeContactHandler}/>
     </div>
   )
 }

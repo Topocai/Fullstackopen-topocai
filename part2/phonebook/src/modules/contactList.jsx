@@ -1,7 +1,16 @@
-const ContactList = ({ persons, filter }) => {
+const ContactList = ({ persons, filter, removeContactHandler }) => {
+    const contactsToShow = persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()));
     return (
       <div>
-        {persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase())).map(person => <p key={person.id}>{person.name} {person.number}</p>)}
+        {
+        contactsToShow.map(person =>
+          <label key={person.id} style={{ display: 'block'}}>
+            {person.name} {person.number}
+            <button onClick={() => removeContactHandler(person.id)}>Delete</button>
+          </label>
+            
+          )
+        }
       </div>
     )
 }
