@@ -12,6 +12,9 @@ import './index.css'
 const App = () => {
 
   const [persons, setPersons] = useState([])
+  const [newContact, setNewContact] = useState({name: '', number: null, id: undefined})
+  const [filter, setFilter] = useState('');
+  const [notificationState, setNotificationState] = useState({message: null, color: null});
 
   const contactFetch = () => 
   {
@@ -21,11 +24,8 @@ const App = () => {
 
   useEffect(contactFetch, []);
 
-  const [newContact, setNewContact] = useState({name: '', number: null, id: undefined})
-  const [filter, setFilter] = useState('');
-  const [notificationState, setNotificationState] = useState({message: null, color: null});
-
-  const showNotification = (message, color) => {
+  const showNotification = (message, color) => 
+  {
     setNotificationState({message, color})
     setTimeout(() => setNotificationState({message: null, color: null}), 5000)
   }
