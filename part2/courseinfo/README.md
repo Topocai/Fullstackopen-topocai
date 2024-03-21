@@ -1,1 +1,3 @@
-# Part 1 fullstackopen course
+# Courseinfo part2
+
+All exercises done
