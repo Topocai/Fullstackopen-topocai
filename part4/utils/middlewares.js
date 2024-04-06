@@ -2,9 +2,9 @@ const logger = require('./loggers')
 
 const requestLogger = (req, res, next) => {
     let logText = `${req.method} ${req.path}`
-    logText += Object.keys(req.body).length > 0 ? ` - ${req.body}`: ''
+    logText += Object.keys(req.body).length > 0 ? ` - [REQ BODY BELOW]\n${JSON.stringify(req.body)}`: ''
     logger.info(logText, "--------")
-
+    
     next()
 }
 
