@@ -9,6 +9,7 @@ const config = require('./utils/config')
 const loggers = require('./utils/loggers')
 const middlewares = require('./utils/middlewares')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 
 const mongoUrl = config.MONGODB_URI
 mongoose.set('strictQuery', false)
@@ -22,6 +23,7 @@ app.use(express.json())
 app.use(middlewares.requestLogger)
 
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
 
 app.use(middlewares.unkownEndpoint)
 app.use(middlewares.errorHandler)

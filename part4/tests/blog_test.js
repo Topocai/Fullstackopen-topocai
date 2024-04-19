@@ -137,6 +137,6 @@ describe.only('Initial blogs', () => {
     })
 })
 
-after(async () => {
+after(() => {
     mongoose.connection.close()
 })
