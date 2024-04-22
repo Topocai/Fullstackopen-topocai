@@ -1,6 +1,8 @@
 const { response } = require('../app')
 const logger = require('./loggers')
 
+const jwt = require('jsonwebtoken')
+
 const requestLogger = (req, res, next) => {
     let logText = `${req.method} ${req.path}`
     const reqBody = {...req.body}
@@ -9,6 +11,25 @@ const requestLogger = (req, res, next) => {
     }
     logText += Object.keys(reqBody).length > 0 ? ` - [REQ BODY BELOW]\n${JSON.stringify(reqBody)}`: ''
     logger.info(logText, "--------")
+    
+    next()
+}
+
+const checkAndGetUserToken = (req, res, next) => {
+    
+    const authorization = req.get('authorization')
+    const token = authorization && authorization.toLowerCase().startsWith('bearer ') ? authorization.substring(7) : null
+
+    if (token) {
+        const decodedToken = jwt.verify(token, process.env.SECRET)
+        if(!decodedToken.id) {
+            res.status(401).send({ error: 'invalid token sd' }).end() //or redirect to login
+        } else {
+            req.body.userLogin = decodedToken.id
+        }
+    } else {
+        res.status(401).send({ error: 'invalid authorization, make sure you type "bearer <token>" ;)' }).end()
+    }
     
     next()
 }
@@ -34,5 +55,6 @@ const errorHandler = (error, req, res, next) => {
 module.exports = {
     requestLogger,
     unkownEndpoint,
-    errorHandler
+    errorHandler,
+    checkAndGetUserToken
 }
