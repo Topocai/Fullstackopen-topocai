@@ -1,7 +1,9 @@
-import ToggeableComponent from "./toggleable"
-import blogServices from "../services/blogs"
+import ToggeableComponent from './toggleable'
+import blogServices from '../services/blogs'
 
-import { useState } from "react"
+import React, { useState } from 'react'
+
+import PropTypes from 'prop-types'
 
 const blogStyle = {
   paddingTop: 10,
@@ -18,9 +20,9 @@ const Blog = ({ blog, refreshBlogs }) => {
     event.preventDefault()
     try {
       const request = await blogServices.likeBlog(blog.id, { likes: blog.likes + 1 })
-      setLikes(request.likes) 
-      //if its wanted, we can use "refreshBlogs" from app.jsx to update the list and set in order per likes too.
-      //Also that solution removes the useState from this component because isn't needed.
+      setLikes(request.likes)
+      // if its wanted, we can use "refreshBlogs" from app.jsx to update the list and set in order per likes too.
+      // Also that solution removes the useState from this component because isn't needed.
     } catch {
       console.log('error in like')
     }
@@ -29,7 +31,7 @@ const Blog = ({ blog, refreshBlogs }) => {
   const removeHandler = async (event) => {
     event.preventDefault()
     const confirm = window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)
-    if(confirm) {
+    if (confirm) {
       try {
         await blogServices.removeBlog(blog.id)
 
@@ -37,12 +39,12 @@ const Blog = ({ blog, refreshBlogs }) => {
       } catch {
         console.log('error in remove')
       }
-    } else {}
+    }
   }
 
   return (
     <div style={blogStyle}>
-      "{blog.title}"
+      {blog.title}
       <ToggeableComponent hideLabel='hide' showLabel='view'>
         <a href={blog.url}><p>{blog.url}</p></a>
         <p>{likes} likes <button onClick={(e) => likeHandler(e)}>Like</button></p>
@@ -50,9 +52,13 @@ const Blog = ({ blog, refreshBlogs }) => {
 
         <button onClick={(e) => removeHandler(e)}>Remove</button>
       </ToggeableComponent>
-    </div>  
+    </div>
   )
-  
+}
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,
+  refreshBlogs: PropTypes.func.isRequired
 }
 
 export default Blog

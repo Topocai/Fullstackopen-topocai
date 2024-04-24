@@ -1,11 +1,12 @@
-import { useState } from "react"
+import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 
 const LoginForm = ({ onLoginHandler }) => {
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
-    return (
-       <form onSubmit={(e) => onLoginHandler(e, {username, password})}>
+  return (
+       <form onSubmit={(e) => onLoginHandler(e, { username, password })}>
          <div>
            username
            <input onChange={(e) => setUsername(e.target.value)}/>
@@ -16,7 +17,11 @@ const LoginForm = ({ onLoginHandler }) => {
          </div>
          <button type='submit'>login</button>
        </form>
-    )
+  )
+}
+
+LoginForm.propTypes = {
+  onLoginHandler: PropTypes.func.isRequired
 }
 
 export default LoginForm

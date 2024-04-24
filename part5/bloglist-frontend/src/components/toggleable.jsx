@@ -1,32 +1,41 @@
-import { useState, forwardRef, useImperativeHandle } from "react"
+import React, { useState, forwardRef, useImperativeHandle } from 'react'
+import PropTypes from 'prop-types'
 
-const ToggeableComponent = forwardRef( ({children, hideLabel, showLabel}, refs)  => {
-    const [visible, setVisible] = useState(false)
+const ToggeableComponent = forwardRef(({ children, hideLabel, showLabel }, refs) => {
+  const [visible, setVisible] = useState(false)
 
-    const toggleVisibility = () => {
-        setVisible(!visible)
+  const toggleVisibility = () => {
+    setVisible(!visible)
+  }
+
+  useImperativeHandle(refs, () => {
+    return {
+      toggleVisibility
     }
+  })
 
-    useImperativeHandle(refs, () => {
-        return {
-            toggleVisibility
-        }
-    })
-
-    if(visible) {
-        return (
-            <div>
-                <button onClick={toggleVisibility}>{hideLabel}</button>
-                {children}
-            </div>
-        )
-    } else {
-        return (
-            <div>
-                <button onClick={toggleVisibility}>{showLabel}</button>
-            </div>
-        )
-    }
+  if (visible) {
+    return (
+      <div>
+        <button onClick={toggleVisibility}>{hideLabel}</button>
+        {children}
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        <button onClick={toggleVisibility}>{showLabel}</button>
+      </div>
+    )
+  }
 })
+
+ToggeableComponent.displayName = 'Toggeable'
+
+ToggeableComponent.propTypes = {
+  children: PropTypes.node.isRequired,
+  hideLabel: PropTypes.string.isRequired,
+  showLabel: PropTypes.string.isRequired
+}
 
 export default ToggeableComponent
