@@ -9,13 +9,13 @@ const PostBlog = ({ onBlogPost }) => {
   return (
       <form onSubmit={(e) => onBlogPost(e, { newBlogTitle, newBlogAuthor, newBlogUrl })}>
        <label>Title:
-           <input onChange={(e) => setNewBlogTitle(e.target.value)} required/>
+           <input onChange={(e) => setNewBlogTitle(e.target.value)} placeholder='Title' required/>
        </label>
        <label>Author:
-           <input onChange={(e) => setNewBlogAuthor(e.target.value)}/>
+           <input onChange={(e) => setNewBlogAuthor(e.target.value)} placeholder='Author'/>
        </label>
        <label>Url:
-           <input onChange={(e) => setNewBlogUrl(e.target.value)} required/>
+           <input onChange={(e) => setNewBlogUrl(e.target.value)} placeholder='Url' required/>
        </label>
        <button type='submit'>Create</button>
       </form>
