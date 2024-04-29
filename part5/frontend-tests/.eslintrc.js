@@ -1,14 +1,11 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true,
-    'vitest-globals/env': true
+    node: true,
+    commonjs: true,
+    es2021: true
   },
-  extends: [
-    'standard',
-    'plugin:react/recommended',
-    'plugin:vitest-globals/recommended'
-  ],
+  extends: 'standard',
   overrides: [
     {
       env: {
@@ -23,12 +20,8 @@ module.exports = {
     }
   ],
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
+    ecmaVersion: 'latest'
   },
-  plugins: [
-    'react'
-  ],
   rules: {
   }
 }

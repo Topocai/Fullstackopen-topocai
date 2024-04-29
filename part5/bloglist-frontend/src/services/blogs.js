@@ -1,8 +1,9 @@
 import axios from 'axios'
-const baseUrl = '/api/blogs'
+const baseUrl = process.env.NODE_ENV === 'test' ? 'http://localhost:3001/api/blogs' : '/api/blogs'
 
 let token = null
 
+// eslint-disable-next-line no-return-assign
 const setToken = (newToken) => token = `Bearer ${newToken}`
 
 const getAll = async () => {

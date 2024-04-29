@@ -16,14 +16,14 @@ const ToggeableComponent = forwardRef(({ children, hideLabel, showLabel }, refs)
 
   if (visible) {
     return (
-      <div>
+      <div className='toggeable'>
         <button onClick={toggleVisibility}>{hideLabel}</button>
         {children}
       </div>
     )
   } else {
     return (
-      <div>
+      <div className='toggeable'>
         <button onClick={toggleVisibility}>{showLabel}</button>
       </div>
     )

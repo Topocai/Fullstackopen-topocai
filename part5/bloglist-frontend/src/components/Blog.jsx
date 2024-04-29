@@ -1,7 +1,7 @@
 import ToggeableComponent from './toggleable'
 import blogServices from '../services/blogs'
 
-import React, { useState } from 'react'
+import React from 'react'
 
 import PropTypes from 'prop-types'
 
@@ -13,16 +13,15 @@ const blogStyle = {
   marginBottom: 5
 }
 
-const Blog = ({ blog, refreshBlogs }) => {
-  const [likes, setLikes] = useState(blog.likes)
-
+const Blog = ({ blog, refreshBlogs, loggedUser }) => {
   const likeHandler = async (event) => {
     event.preventDefault()
+    const likeButton = document.getElementById('like-button')
+    likeButton.disabled = true
     try {
-      const request = await blogServices.likeBlog(blog.id, { likes: blog.likes + 1 })
-      setLikes(request.likes)
-      // if its wanted, we can use "refreshBlogs" from app.jsx to update the list and set in order per likes too.
-      // Also that solution removes the useState from this component because isn't needed.
+      await blogServices.likeBlog(blog.id, { likes: blog.likes + 1 })
+      await refreshBlogs()
+      likeButton.disabled = false
     } catch {
       console.log('error in like')
     }
@@ -43,14 +42,16 @@ const Blog = ({ blog, refreshBlogs }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className='blog-container'>
       {blog.title}
       <ToggeableComponent hideLabel='hide' showLabel='view'>
         <a href={blog.url}><p>{blog.url}</p></a>
-        <p>{likes} likes <button onClick={(e) => likeHandler(e)}>Like</button></p>
+        <p>{blog.likes} likes <button id='like-button' onClick={(e) => likeHandler(e)}>Like</button></p>
         <p>~ {blog.author}</p>
 
-        <button onClick={(e) => removeHandler(e)}>Remove</button>
+        {
+          loggedUser === (blog.user.id || blog.user) && <button onClick={(e) => removeHandler(e)}>Remove</button> // Edited for only shows if its your blog in 5.22
+        }
       </ToggeableComponent>
     </div>
   )
@@ -58,7 +59,8 @@ const Blog = ({ blog, refreshBlogs }) => {
 
 Blog.propTypes = {
   blog: PropTypes.object.isRequired,
-  refreshBlogs: PropTypes.func.isRequired
+  refreshBlogs: PropTypes.func.isRequired,
+  loggedUser: PropTypes.string.isRequired
 }
 
 export default Blog

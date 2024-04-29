@@ -57,7 +57,7 @@ const App = () => {
 
       showNotification(`${loginData.name} Login successful, welcome`, { color: 'green' })
     } catch (err) {
-      showNotification(`${err}`, { color: 'red' })
+      showNotification(`${err.response.data.error}`, { color: 'red' }) // Fixed error message in 5.18
     }
   }
 
@@ -97,7 +97,7 @@ const App = () => {
       }
 
       <h2>blogs</h2>
-      {user !== null ? blogs.map(blog => <Blog key={blog.id} blog={blog} refreshBlogs={refreshBlogs}/>) : <p>You need to login to see blogs</p>}
+      {user !== null ? blogs.map(blog => <Blog key={blog.id} blog={blog} refreshBlogs={refreshBlogs} loggedUser={user.id}/>) : <p>You need to login to see blogs</p>}
 
     </div>
   )
