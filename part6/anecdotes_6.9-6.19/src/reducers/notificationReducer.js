@@ -6,7 +6,7 @@ const notificationSlice = createSlice({
     reducers: {
         clearNotification: () => null,
         setNotification(state, { payload }) {
-            const time = payload.time || 5000
+            const time = payload.time * 1000 || 5000
             return { message: payload.message, color: payload.color || "green", time }
         }
     },
