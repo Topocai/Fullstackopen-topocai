@@ -2,7 +2,11 @@
 
 ## Folders
 
-### 7.9 to 7.13
+### 7.9 to 7.13 Query
+
+> bloglist-query
+
+### 7.9 to 7.13 Redux
 
 > bloglist-redux
 

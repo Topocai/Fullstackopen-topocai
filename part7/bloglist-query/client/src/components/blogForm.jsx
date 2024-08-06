@@ -1,0 +1,50 @@
+import React, { useState } from 'react'
+
+import { useBlogs } from '../hooks'
+
+const BlogForm = () => {
+  const [newBlogTitle, setNewBlogTitle] = useState('')
+  const [newBlogAuthor, setNewBlogAuthor] = useState('')
+  const [newBlogUrl, setNewBlogUrl] = useState('')
+
+  const [blogResource, blogMutations] = useBlogs()
+
+  return (
+    <form
+      onSubmit={(e) =>
+        blogMutations.onAddBlogHandler(e, {
+          title: newBlogTitle,
+          author: newBlogAuthor,
+          url: newBlogUrl,
+        })
+      }
+    >
+      <label>
+        Title:
+        <input
+          onChange={(e) => setNewBlogTitle(e.target.value)}
+          placeholder="Title"
+          required
+        />
+      </label>
+      <label>
+        Author:
+        <input
+          onChange={(e) => setNewBlogAuthor(e.target.value)}
+          placeholder="Author"
+        />
+      </label>
+      <label>
+        Url:
+        <input
+          onChange={(e) => setNewBlogUrl(e.target.value)}
+          placeholder="Url"
+          required
+        />
+      </label>
+      <button type="submit">Create</button>
+    </form>
+  )
+}
+
+export default BlogForm
