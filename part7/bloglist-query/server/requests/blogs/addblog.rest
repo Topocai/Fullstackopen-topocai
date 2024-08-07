@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/blogs
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlRvcG9jYWkiLCJpZCI6IjY2YWM0ZTk4YmQ2ZDhmNWM4NjMyZTlkZSIsImlhdCI6MTcyMjkxNjA0NSwiZXhwIjoxNzIyOTE5NjQ1fQ.ox45T1pZSzhD-RIAPgOqvaU8Y3OUpRsil3NWr52Qi30
+
+{
+    "title": "A new blog",
+    "author": "Topocai",
+    "url": "https://topocai.github.io"
+}
