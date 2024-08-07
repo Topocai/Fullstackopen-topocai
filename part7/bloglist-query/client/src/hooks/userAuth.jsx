@@ -10,7 +10,7 @@ const initialState = {
 
 export const loginService = async (user) => {
   try {
-    const request = await axios.post('api/login', user)
+    const request = await axios.post('/api/login', user)
     window.localStorage.setItem('userLogged', JSON.stringify(request.data))
     return request.data
   } catch {
@@ -70,6 +70,17 @@ export const useAuthDispatch = () => {
   const state = useContext(UserContext)
   if (state) return state[1]
   else return null
+}
+
+export async function onLoginHandler(e, username, password) {
+  e.preventDefault()
+  const userData = await loginService({ username, password })
+  useAuthDispatch(loginAction(userData))
+}
+
+export const onLogoutHandler = () => {
+  const dispatch = useAuthDispatch()
+  dispatch(clearAction())
 }
 
 export default UserProvider

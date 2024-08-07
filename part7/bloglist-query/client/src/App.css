@@ -1,5 +1,18 @@
 main {
   display: flex;
   flex-flow: column nowrap;
-  align-items: center;
+  align-items: stretch;
+  justify-content: center;
+
+  padding: 10px 10vw;
+
+  min-height: 100vh;
+  height: 100%;
+}
+
+.navbar {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 10px;
+  font-weight: 600;
 }

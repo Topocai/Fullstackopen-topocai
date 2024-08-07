@@ -4,80 +4,86 @@ import axios from 'axios'
 import { useNotificationDispatch, setNotification } from './notification'
 import { useAuthValue } from './userAuth'
 
-export const useResource = (key) => {
+export const useResource = (resourceKey, dependentKeys = []) => {
   const queryClient = useQueryClient()
-  const userData = useAuthValue()
-  const token = userData.token
+  const { token } = useAuthValue()
 
-  const baseUrl = `/api/${key}`
+  const apiUrl = `/api/${resourceKey}`
 
-  const config = {
-    headers: { Authorization: `bearer ${token ? token : ''}` },
+  const headers = {
+    Authorization: `Bearer ${token || ''}`,
   }
 
-  const queryData = useQuery({
-    queryKey: [key],
-    queryFn: () => axios.get(baseUrl).then((res) => res.data),
-  })
+  const queryConfig = {
+    queryKey: [resourceKey],
+    queryFn: () => axios.get(apiUrl, { headers }).then(({ data }) => data),
+  }
+
+  const queryData = useQuery(queryConfig)
 
   const resources = {
-    data: [],
-    errorContent: null,
-  }
-
-  if (queryData.isLoading)
-    resources.errorContent = (
-      <div>
+    data: queryData.isSuccess ? queryData.data : [],
+    errorContent: queryData.isLoading ? (
+      <>
         loading data...
         {queryData.failureCount > 0 && (
-          <span> Failed, retrying.. attemp {queryData.failureCount}</span>
+          <span>Failed, retrying.. attemp {queryData.failureCount}</span>
         )}
-      </div>
-    )
-  else if (!queryData.isSuccess)
-    resources.errorContent = (
-      <div>'{key}' Service not available due to problems in server</div>
-    )
-  else resources.data = queryData.data
+      </>
+    ) : (
+      queryData.isError && (
+        <div>{resourceKey} service not available due to problems in server</div>
+      )
+    ),
+  }
 
-  const onSuccesHandler = (callback = () => {}) => {
-    queryClient.invalidateQueries({ queryKey: [key] })
+  const onSuccessHandler = (callback = () => {}) => {
+    queryClient.invalidateQueries({ queryKey: [resourceKey] })
+    queryClient.invalidateQueries({ queryKey: dependentKeys })
     callback()
   }
 
-  const newDataMutation = useMutation({
+  const mutationConfig = {
     mutationFn: (newObject) =>
-      axios.post(baseUrl, newObject, config).then((res) => res.data),
-  })
+      axios.post(apiUrl, newObject, { headers }).then(({ data }) => data),
+  }
 
-  const updateDataMutation = useMutation({
-    mutationFn: (newObject) =>
-      axios.put(`${baseUrl}/${newObject.id}`, newObject, config),
-  })
+  const newDataMutation = useMutation(mutationConfig)
 
-  const removeDataMutation = useMutation({
-    mutationFn: (id) => axios.delete(`${baseUrl}/${id}`, config),
-  })
+  const updateMutationConfig = {
+    mutationFn: (updatedObject) =>
+      axios
+        .put(`${apiUrl}/${updatedObject.id}`, updatedObject, { headers })
+        .then(({ data }) => data),
+  }
 
-  const mutations = {
+  const updateDataMutation = useMutation(updateMutationConfig)
+
+  const removeMutationConfig = {
+    mutationFn: (id) => axios.delete(`${apiUrl}/${id}`, { headers }),
+  }
+
+  const removeDataMutation = useMutation(removeMutationConfig)
+
+  const services = {
     newDataMutation,
     updateDataMutation,
     removeDataMutation,
-    onSuccesHandler,
+    onSuccessHandler,
   }
 
-  return [resources, mutations]
+  return [resources, services]
 }
 
 export const useBlogs = () => {
-  const [blogResource, blogMutations] = useResource('blogs')
+  const [blogResource, blogservices] = useResource('blogs', ['users'])
   const notifyDispatch = useNotificationDispatch()
 
   const onAddBlogHandler = (e, blog) => {
     e.preventDefault()
-    blogMutations.newDataMutation.mutate(blog, {
+    blogservices.newDataMutation.mutate(blog, {
       onSuccess: () =>
-        blogMutations.onSuccesHandler(
+        blogservices.onSuccessHandler(
           notifyDispatch(
             setNotification(`Blog ${blog.title} added!`, 'green', 5),
           ),
@@ -96,9 +102,9 @@ export const useBlogs = () => {
   const onVoteHandler = (e, blog) => {
     e.preventDefault()
     const newBlog = { ...blog, likes: blog.likes + 1 }
-    blogMutations.updateDataMutation.mutate(newBlog, {
+    blogservices.updateDataMutation.mutate(newBlog, {
       onSuccess: () =>
-        blogMutations.onSuccesHandler(
+        blogservices.onSuccessHandler(
           notifyDispatch(
             setNotification(`Blog '${blog.title} voted!`, 'green', 5),
           ),
@@ -116,9 +122,9 @@ export const useBlogs = () => {
 
   const onRemoveHandler = (e, blogId) => {
     e.preventDefault()
-    blogMutations.removeDataMutation.mutate(blogId, {
+    blogservices.removeDataMutation.mutate(blogId, {
       onSuccess: () =>
-        blogMutations.onSuccesHandler(
+        blogservices.onSuccessHandler(
           notifyDispatch(setNotification(`Blog ${blogId} removed`, 'green', 5)),
         ),
       onError: (err) =>
@@ -126,12 +132,11 @@ export const useBlogs = () => {
     })
   }
 
-  const mutations = {
+  const services = {
     onAddBlogHandler,
     onVoteHandler,
     onRemoveHandler,
-    updateToken: blogMutations.updateToken,
   }
 
-  return [blogResource, mutations]
+  return [blogResource, services]
 }
