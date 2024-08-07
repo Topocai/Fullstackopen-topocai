@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 const User = ({ user }) => {
   return (
-    <article>
+    <article className="spawn-container">
       <Link to="/users">List</Link>
       <h3>- {user.name}</h3>
       <h4>added blogs</h4>

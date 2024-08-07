@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 const LoginForm = ({ onLoginHandler }) => {
   return (
-    <form onSubmit={onLoginHandler}>
+    <form onSubmit={onLoginHandler} className="spawn-container">
       <div>
         username
         <input id="username" required />

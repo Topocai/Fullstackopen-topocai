@@ -14,6 +14,7 @@ const BlogForm = () => {
   return (
     <ToggeableComponent hideLabel="cancel" showLabel="create">
       <form
+        className="spawn-container"
         onSubmit={(e) =>
           blogMutations.onAddBlogHandler(e, {
             title: newBlogTitle,

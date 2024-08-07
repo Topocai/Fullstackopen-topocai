@@ -85,6 +85,7 @@ const App = () => {
                   loggedUserId={userLogged.id || undefined}
                   onLikeHandler={blogServices.onVoteHandler}
                   onRemoveHandler={blogServices.onRemoveHandler}
+                  onCommentHandler={blogServices.onCommentHandler}
                 />
               }
             />

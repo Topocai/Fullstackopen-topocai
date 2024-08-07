@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 const BlogList = ({ blogs }) => {
   return (
-    <article>
+    <article className="spawn-container">
       {blogs.length > 0 ? (
         blogs.map((blog) => (
           <ul key={blog.id}>

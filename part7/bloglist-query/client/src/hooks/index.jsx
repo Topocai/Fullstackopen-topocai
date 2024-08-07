@@ -79,6 +79,14 @@ export const useBlogs = () => {
   const [blogResource, blogservices] = useResource('blogs', ['users'])
   const notifyDispatch = useNotificationDispatch()
 
+  const postCommentConfig = {
+    mutationFn: ({ comment, blogId }) =>
+      axios
+        .post(`/api/blogs/${blogId}/comments`, { comment })
+        .then(({ data }) => data),
+  }
+  const postCommentMutation = useMutation(postCommentConfig)
+
   const onAddBlogHandler = (e, blog) => {
     e.preventDefault()
     blogservices.newDataMutation.mutate(blog, {
@@ -91,7 +99,7 @@ export const useBlogs = () => {
       onError: (error) =>
         notifyDispatch(
           setNotification(
-            `Blog '${blog.title} not added! try again\n${error}`,
+            `Blog '${blog.title} not added! try again\n${error.response.data.error}`,
             'red',
             5,
           ),
@@ -112,7 +120,7 @@ export const useBlogs = () => {
       onError: (error) =>
         notifyDispatch(
           setNotification(
-            `Blog '${blog.title} not voted! try again\n${error}`,
+            `Blog '${blog.title} not voted! try again\n${error.response.data.error}`,
             'red',
             5,
           ),
@@ -128,14 +136,45 @@ export const useBlogs = () => {
           notifyDispatch(setNotification(`Blog ${blogId} removed`, 'green', 5)),
         ),
       onError: (err) =>
-        notifyDispatch(setNotification(`Error on remove ${err}`, 'red', 5)),
+        notifyDispatch(
+          setNotification(
+            `Error on remove ${err.response.data.error}`,
+            'red',
+            5,
+          ),
+        ),
     })
+  }
+
+  const onCommentHandler = (e, blogId, comment) => {
+    e.preventDefault()
+
+    postCommentMutation.mutate(
+      { comment, blogId },
+      {
+        onSuccess: () =>
+          blogservices.onSuccessHandler(
+            notifyDispatch(
+              setNotification(`Comment ${comment} added!`, 'green', 5),
+            ),
+          ),
+        onError: (error) =>
+          notifyDispatch(
+            setNotification(
+              `Comment not added: \n${error.response.data.error}`,
+              'red',
+              5,
+            ),
+          ),
+      },
+    )
   }
 
   const services = {
     onAddBlogHandler,
     onVoteHandler,
     onRemoveHandler,
+    onCommentHandler,
   }
 
   return [blogResource, services]

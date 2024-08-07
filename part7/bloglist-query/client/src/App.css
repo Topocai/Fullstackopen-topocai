@@ -16,3 +16,72 @@ main {
   gap: 10px;
   font-weight: 600;
 }
+
+.blog-container {
+  border: 1px solid gray;
+  border-radius: 5px;
+  align-self: center;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+
+  padding: 10px 10px 50px 10px;
+  box-shadow: rgba(128, 17, 202, 0.35) 0px 5px 15px;
+}
+
+.blog-container div {
+  padding-right: 10%;
+}
+
+.blog-container footer {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-self: stretch;
+  padding: 0 10% 0 10%;
+}
+
+@media (max-width: 600px) {
+  .blog-container footer {
+    display: flex;
+    flex-flow: column nowrap;
+  }
+
+  .blog-inputs {
+    justify-content: center;
+  }
+}
+
+.blog-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 0.5fr));
+  column-gap: 10px;
+  max-width: 500px;
+  min-width: 200px;
+}
+
+.blog-inputs button {
+  text-align: center;
+}
+
+.blog-inputs input {
+  grid-column-start: 1;
+  grid-column-end: -1;
+}
+
+.spawn-container {
+  animation: spawn 0.5s ease-in-out;
+}
+
+@keyframes spawn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

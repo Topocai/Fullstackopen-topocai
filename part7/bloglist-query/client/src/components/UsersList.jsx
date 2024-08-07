@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 const UsersList = ({ users }) => {
   return (
-    <article>
+    <article className="spawn-container">
       <table>
         <tbody>
           <tr>

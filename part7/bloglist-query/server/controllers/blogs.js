@@ -8,6 +8,27 @@ blogsRouter.get("/", async (request, response) => {
   response.json(blogs);
 });
 
+blogsRouter.post("/:id/comments", async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+  const comment = request.body.comment.trim();
+
+  if (!blog) {
+    return response.status(404).json({ error: "blog not found" });
+  }
+
+  if (comment === "") {
+    return response.status(400).json({ error: "comment cannot be empty" });
+  }
+  if (comment.length > 49) {
+    return response.status(400).json({ error: "comment too long" });
+  }
+
+  blog.comments = blog.comments.concat(comment);
+
+  const updatedBlog = await blog.save();
+  response.status(200).json(updatedBlog);
+});
+
 blogsRouter.post(
   "/",
   middlewares.checkAndGetUserToken,
@@ -30,6 +51,7 @@ blogsRouter.post(
     const newBlogSchema = new Blog(newBlogData);
 
     newBlogSchema.likes = 0;
+    newBlogSchema.comments = [];
 
     userAuthor.blogs = [...userAuthor.blogs].concat(newBlogSchema.id);
     await userAuthor.save();
