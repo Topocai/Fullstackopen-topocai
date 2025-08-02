@@ -1,4 +1,4 @@
-const { books } = require("../index");
+const { books, authors } = require("../index");
 
 const definitions = `
     type Book {
@@ -9,7 +9,17 @@ const definitions = `
         id: ID!
     }
 `;
+
 const queries = `bookCount: Int!\nallBooks(author: String, genre: String): [Book!]!`;
+
+const mutationsDef = `
+    addBook(
+        title: String!
+        published: Int!
+        author: String!
+        genres: [String!]!
+    ): Book!
+`;
 
 const queryResolver = {
   bookCount: () => books.length,
@@ -33,4 +43,24 @@ const queryResolver = {
   },
 };
 
-module.exports = { definitions, queries, queryResolver };
+const mutations = {
+  addBook: (root, args) => {
+    const book = { ...args, id: (books.length + 1).toString() };
+    books.push(book);
+
+    if (authors.find((author) => author.name === book.author) === undefined) {
+      const author = { name: book.author, id: (authors.length + 1).toString() };
+      authors.push(author);
+    }
+
+    return book;
+  },
+};
+
+module.exports = {
+  definitions,
+  queries,
+  queryResolver,
+  mutationsDef,
+  mutations,
+};

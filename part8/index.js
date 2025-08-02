@@ -103,6 +103,8 @@ const {
   definitions: bookDefinitions,
   queries: bookQueries,
   queryResolver: bookQueriesResolver,
+  mutationsDef: bookMutationsDef,
+  mutations: bookMutations,
 } = require("./definitions/books");
 const {
   definitions: authorDefinitions,
@@ -119,6 +121,10 @@ ${authorDefinitions}
     ${bookQueries}
     ${authorQueries}
   }
+  
+  type Mutation {
+    ${bookMutationsDef}
+  }
 `;
 
 const resolvers = {
@@ -126,6 +132,9 @@ const resolvers = {
     dummy: () => 0,
     ...bookQueriesResolver,
     ...authorQueriesResolver,
+  },
+  Mutation: {
+    ...bookMutations,
   },
   Author,
 };

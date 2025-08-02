@@ -3,7 +3,7 @@ const { authors, books } = require("../index");
 const definitions = `
     type Author {
         name: String!
-        born: Int!
+        born: Int
         bookCount: Int!
         id: ID!
     }
