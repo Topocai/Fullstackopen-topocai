@@ -95,10 +95,6 @@ let books = [
 
 module.exports = { books, authors };
 
-/*
-  you can remove the placeholder query once your first one has been implemented 
-*/
-
 const {
   definitions: bookDefinitions,
   queries: bookQueries,
@@ -132,7 +128,6 @@ ${authorDefinitions}
 
 const resolvers = {
   Query: {
-    dummy: () => 0,
     ...bookQueriesResolver,
     ...authorQueriesResolver,
   },
