@@ -111,6 +111,8 @@ const {
   queries: authorQueries,
   queryResolver: authorQueriesResolver,
   Author,
+  mutationsDef: authorMutationsDef,
+  mutations: authorMutations,
 } = require("./definitions/authors");
 
 const typeDefs = `
@@ -124,6 +126,7 @@ ${authorDefinitions}
   
   type Mutation {
     ${bookMutationsDef}
+    ${authorMutationsDef}
   }
 `;
 
@@ -135,6 +138,7 @@ const resolvers = {
   },
   Mutation: {
     ...bookMutations,
+    ...authorMutations,
   },
   Author,
 };
