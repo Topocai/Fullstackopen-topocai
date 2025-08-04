@@ -22,19 +22,22 @@ const App = () => {
           </div>
         </div>
         <Routes>
-          {books.data && (
-            <Route
-              path="/books"
-              element={<Books books={books.data?.allBooks} />}
-            />
-          )}
-          [authors.data &&
+          <Route
+            path="/books"
+            element={
+              <>{books.data && <Books books={books.data?.allBooks} />}</>
+            }
+          />
           <Route
             path="/authors"
-            element={<Authors authors={authors.data?.allAuthors} />}
+            element={
+              <>
+                {authors.data && <Authors authors={authors.data?.allAuthors} />}
+              </>
+            }
           />
-          ]
           <Route path="/addBook" element={<NewBook />} />
+          <Route path="/" element={<></>} />
         </Routes>
       </Router>
     </>

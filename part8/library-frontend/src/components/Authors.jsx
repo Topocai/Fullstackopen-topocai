@@ -1,9 +1,21 @@
 import PropTypes from "prop-types";
 
+import { useState } from "react";
+
+import AuthorForm from "./AuthorForm";
+
 const Authors = ({ authors }) => {
+  const [authorSelected, selectAuthor] = useState(null);
+  const onClickAuthor = (e, name) => {
+    e.preventDefault();
+
+    selectAuthor(name);
+    console.log(name);
+  };
   return (
     <div>
       <h2>authors</h2>
+
       <table>
         <tbody>
           <tr>
@@ -13,13 +25,18 @@ const Authors = ({ authors }) => {
           </tr>
           {authors.map((a) => (
             <tr key={a.name}>
-              <td>{a.name}</td>
+              <td>
+                <a href="" onClick={(e) => onClickAuthor(e, a.name)}>
+                  {a.name}
+                </a>
+              </td>
               <td>{a.born}</td>
               <td>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <AuthorForm author={authorSelected} />
     </div>
   );
 };
