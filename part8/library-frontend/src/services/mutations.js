@@ -1,0 +1,22 @@
+import { gql } from "@apollo/client";
+
+export const CREATE_BOOK = gql`
+  mutation createBook(
+    $authorName: String!
+    $title: String!
+    $published: Int!
+    $genres: [String!]!
+  ) {
+    addBook(
+      title: $title
+      published: $published
+      author: $authorName
+      genres: $genres
+    ) {
+      title
+      author
+      published
+      genres
+    }
+  }
+`;
