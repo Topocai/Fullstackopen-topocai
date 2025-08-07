@@ -29,7 +29,13 @@ const queryResolver = {
 };
 
 const mutations = {
-  editAuthor: async (root, args) => {
+  editAuthor: async (root, args, context) => {
+    if (!context.loggedUser) {
+      throw new GraphQLError("Not logged in", {
+        extensions: { code: "NOT_LOGGED_IN" },
+      });
+    }
+
     const author = await AuthorModel.findOneAndUpdate(
       { name: args.name },
       { born: args.setBornTo },

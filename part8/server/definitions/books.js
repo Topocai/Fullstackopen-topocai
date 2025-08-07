@@ -48,7 +48,13 @@ const queryResolver = {
 };
 
 const mutations = {
-  addBook: async (root, args) => {
+  addBook: async (root, args, context) => {
+    if (!context.loggedUser) {
+      throw new GraphQLError("Not logged in", {
+        extensions: { code: "NOT_LOGGED_IN" },
+      });
+    }
+
     let author = await Author.findOne({ name: args.author });
 
     // We need to check if the author is currently existing, if is not create a new one using the name passed
