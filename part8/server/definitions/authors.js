@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { GraphQLError } = require("graphql");
 
 const AuthorModel = require("../models/Author");
 const Book = require("../models/Book");
@@ -24,15 +25,22 @@ const queries = `authorCount: Int!\nallAuthors: [Author!]!`;
 
 const queryResolver = {
   authorCount: async () => AuthorModel.collection.countDocuments(),
-  allAuthors: () => AuthorModel.find({}),
+  allAuthors: async () => AuthorModel.find({}).populate("books"),
 };
 
 const mutations = {
-  editAuthor: (root, args) => {
-    /*
-    const author = authors.find((author) => author.name === args.name);
-    if (author != undefined) author.born = args.setBornTo;
-    return author;*/
+  editAuthor: async (root, args) => {
+    const author = await AuthorModel.findOneAndUpdate(
+      { name: args.name },
+      { born: args.setBornTo },
+      { new: true }
+    );
+    if (!author) {
+      throw new GraphQLError("Author not found", {
+        extensions: { code: "AUTHOR_NOT_FOUND" },
+      });
+    }
+    return author.populate("books");
   },
 };
 
