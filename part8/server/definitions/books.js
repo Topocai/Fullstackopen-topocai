@@ -49,42 +49,48 @@ const queryResolver = {
 
 const mutations = {
   addBook: async (root, args) => {
-    const author = await Author.findOne({ name: args.author });
-
-    const book = new Book({ ...args });
+    let author = await Author.findOne({ name: args.author });
 
     // We need to check if the author is currently existing, if is not create a new one using the name passed
     // and add the book to the new author, or just add the ID of the existing author that was found
+
     if (!author) {
+      author = new Author({ name: args.author });
       try {
-        const newAuthor = new Author({ name: args.author, books: [book._id] });
-        await newAuthor.save();
-
-        book.author = newAuthor._id;
-      } catch (error) {
-        throw new GraphQLError("Error adding book", {
-          extensions: { code: "NEW_AUTHOR_ERROR", error },
-        });
-      }
-    } else {
-      try {
-        author.books = [...author.books, book._id];
         await author.save();
-
-        book.author = author._id;
       } catch (error) {
         throw new GraphQLError("Error adding book", {
-          extensions: { code: "AUTHOR_SAVING_ERROR", error },
+          extensions: {
+            code: "NEW_AUTHOR_ERROR",
+            error,
+          },
         });
       }
     }
+
+    const book = new Book({ ...args, author: author._id });
 
     // Save the book and handle errors
     try {
       await book.save();
     } catch (error) {
       throw new GraphQLError("Error adding book", {
-        extensions: { code: "BOOK_SAVING_ERROR", error },
+        extensions: {
+          code: "BOOK_SAVING_ERROR",
+          error,
+        },
+      });
+    }
+
+    // Updates the author data with the new book
+    // if it fails, delete the book
+    try {
+      author.books = [...author.books, book._id];
+      await author.save();
+    } catch (error) {
+      Book.deleteOne({ _id: book._id });
+      throw new GraphQLError("Error adding book", {
+        extensions: { code: "AUTHOR_SAVING_ERROR", error },
       });
     }
 
