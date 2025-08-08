@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CREATE_BOOK } from "../services/mutations";
 import { ALL_BOOKS } from "../services/queries";
 import { useMutation } from "@apollo/client";
 
+import { useNavigate } from "react-router-dom";
+
 const NewBook = () => {
+  const nav = useNavigate();
+
+  // back to login if user is not logged
+  useEffect(() => {
+    const userToken = localStorage.getItem("user-token");
+    if (!userToken) {
+      nav("/login");
+    }
+  });
+
   const [createBook] = useMutation(CREATE_BOOK, {
     onError: (error) => {
       console.error("Error when creating book:", error);
     },
     refetchQueries: [{ query: ALL_BOOKS }],
   });
+
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [published, setPublished] = useState("");
@@ -68,6 +81,7 @@ const NewBook = () => {
           />
         </div>
         <div>
+          Genres
           <input
             value={genre}
             onChange={({ target }) => setGenre(target.value)}
@@ -76,7 +90,9 @@ const NewBook = () => {
             add genre
           </button>
         </div>
-        <div>genres: {genres.join(" ")}</div>
+        <div>
+          <header>genres: {genres.join(" ")}</header>
+        </div>
         <button type="submit">create book</button>
       </form>
     </div>

@@ -1,10 +1,21 @@
 import PropTypes from "prop-types";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = ({ onLoginHandler }) => {
+  const nav = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  // exit from login if we are already login
+  useEffect(() => {
+    const userToken = localStorage.getItem("user-token");
+    if (userToken) {
+      nav("/");
+    }
+  });
 
   if (!onLoginHandler) return null;
 

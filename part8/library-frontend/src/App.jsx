@@ -3,17 +3,23 @@ import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
 
+import "./App.css";
+
 import { useEffect, useState } from "react";
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 
 import { ALL_AUTHORS, ALL_BOOKS } from "./services/queries";
 import { LOGIN } from "./services/mutations";
 
 const App = () => {
-  const [userToken, setUserToken] = useState(null);
+  const apolloClient = useApolloClient();
+
+  const [userToken, setUserToken] = useState(
+    localStorage.getItem("user-token")
+  );
 
   const [login, { data }] = useMutation(LOGIN, {
     onError: (error) => {
@@ -37,16 +43,43 @@ const App = () => {
     login({ variables: { username, password } });
   };
 
-  if (!userToken) return <LoginForm onLoginHandler={onLoginHandler} />;
-
+  const logoutHandler = (e) => {
+    e.preventDefault();
+    setUserToken(null);
+    apolloClient.resetStore();
+    localStorage.removeItem("user-token");
+  };
   return (
     <>
       <Router>
         <div>
           <div>
-            <Link to="/books">books </Link>
-            <Link to="/authors">authors </Link>
-            <Link to="/addBook">add book</Link>
+            <Link className="tab-element" to="/books">
+              books
+            </Link>
+            <Link className="tab-element" to="/authors">
+              authors
+            </Link>
+            {userToken && (
+              <Link className="tab-element" to="/addBook">
+                add book
+              </Link>
+            )}
+
+            {!userToken && (
+              <Link className="tab-element" to="/login">
+                Login
+              </Link>
+            )}
+            {userToken && (
+              <button
+                className="tab-element"
+                onClick={logoutHandler}
+                type="button"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
         <Routes>
@@ -65,6 +98,10 @@ const App = () => {
             }
           />
           <Route path="/addBook" element={<NewBook />} />
+          <Route
+            path="/login"
+            element={<LoginForm onLoginHandler={onLoginHandler} />}
+          />
           <Route path="/" element={<></>} />
         </Routes>
       </Router>
