@@ -68,6 +68,7 @@ const mutations = {
         throw new GraphQLError("Error adding book", {
           extensions: {
             code: "NEW_AUTHOR_ERROR",
+            message: error.message,
             error,
           },
         });
@@ -83,6 +84,7 @@ const mutations = {
       throw new GraphQLError("Error adding book", {
         extensions: {
           code: "BOOK_SAVING_ERROR",
+          message: error.message,
           error,
         },
       });
@@ -96,7 +98,11 @@ const mutations = {
     } catch (error) {
       Book.deleteOne({ _id: book._id });
       throw new GraphQLError("Error adding book", {
-        extensions: { code: "AUTHOR_SAVING_ERROR", error },
+        extensions: {
+          code: "AUTHOR_SAVING_ERROR",
+          message: error.message,
+          error,
+        },
       });
     }
 

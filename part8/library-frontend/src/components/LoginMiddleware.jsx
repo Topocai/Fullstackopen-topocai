@@ -4,10 +4,14 @@ import { useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Redirects to /login if user is not logged in (if user-token is not set in local storage)
+ * or show children if user is logged in
+ * @param {object} props.children - React component to render if user is logged in
+ */
 const LoginMiddleware = (props) => {
   const nav = useNavigate();
 
-  // back to login if user is not logged
   useEffect(() => {
     const userToken = localStorage.getItem("user-token");
     if (!userToken) {

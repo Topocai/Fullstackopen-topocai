@@ -7,7 +7,7 @@ import { useMutation } from "@apollo/client";
 import LoginMiddleware from "./LoginMiddleware";
 
 const NewBook = () => {
-  const [createBook] = useMutation(CREATE_BOOK, {
+  const [createBook, { error }] = useMutation(CREATE_BOOK, {
     onError: (error) => {
       console.error("Error when creating book:", error);
     },
@@ -48,6 +48,8 @@ const NewBook = () => {
   return (
     <LoginMiddleware>
       <div>
+        {error && <p>{error.graphQLErrors[0]?.message}</p>}
+        {error && <p>{error.graphQLErrors[0]?.extensions?.message}</p>}
         <form onSubmit={submit}>
           <div>
             title
