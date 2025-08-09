@@ -1,22 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { CREATE_BOOK } from "../services/mutations";
 import { ALL_BOOKS } from "../services/queries";
 import { useMutation } from "@apollo/client";
 
-import { useNavigate } from "react-router-dom";
+import LoginMiddleware from "./LoginMiddleware";
 
 const NewBook = () => {
-  const nav = useNavigate();
-
-  // back to login if user is not logged
-  useEffect(() => {
-    const userToken = localStorage.getItem("user-token");
-    if (!userToken) {
-      nav("/login");
-    }
-  });
-
   const [createBook] = useMutation(CREATE_BOOK, {
     onError: (error) => {
       console.error("Error when creating book:", error);
@@ -56,46 +46,48 @@ const NewBook = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={submit}>
-        <div>
-          title
-          <input
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-        <div>
-          author
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-        <div>
-          published
-          <input
-            type="number"
-            value={published}
-            onChange={({ target }) => setPublished(target.value)}
-          />
-        </div>
-        <div>
-          Genres
-          <input
-            value={genre}
-            onChange={({ target }) => setGenre(target.value)}
-          />
-          <button onClick={addGenre} type="button">
-            add genre
-          </button>
-        </div>
-        <div>
-          <header>genres: {genres.join(" ")}</header>
-        </div>
-        <button type="submit">create book</button>
-      </form>
-    </div>
+    <LoginMiddleware>
+      <div>
+        <form onSubmit={submit}>
+          <div>
+            title
+            <input
+              value={title}
+              onChange={({ target }) => setTitle(target.value)}
+            />
+          </div>
+          <div>
+            author
+            <input
+              value={author}
+              onChange={({ target }) => setAuthor(target.value)}
+            />
+          </div>
+          <div>
+            published
+            <input
+              type="number"
+              value={published}
+              onChange={({ target }) => setPublished(target.value)}
+            />
+          </div>
+          <div>
+            Genres
+            <input
+              value={genre}
+              onChange={({ target }) => setGenre(target.value)}
+            />
+            <button onClick={addGenre} type="button">
+              add genre
+            </button>
+          </div>
+          <div>
+            <header>genres: {genres.join(" ")}</header>
+          </div>
+          <button type="submit">create book</button>
+        </form>
+      </div>
+    </LoginMiddleware>
   );
 };
 

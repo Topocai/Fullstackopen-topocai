@@ -55,7 +55,7 @@ const mutations = {
     if (!user) {
       throw new GraphQLError("User not found");
     }
-    if (!password == "secretshy") {
+    if (password !== "secretshy") {
       throw new GraphQLError("Invalid password");
     }
 

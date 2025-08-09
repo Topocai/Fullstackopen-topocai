@@ -55,7 +55,7 @@ const mutations = {
       });
     }
 
-    let author = await Author.findOne({ name: args.author });
+    let author = await Author.findOne({ name: args.author }).populate("books");
 
     // We need to check if the author is currently existing, if is not create a new one using the name passed
     // and add the book to the new author, or just add the ID of the existing author that was found
@@ -63,7 +63,7 @@ const mutations = {
     if (!author) {
       author = new Author({ name: args.author });
       try {
-        await author.save();
+        (await author.save()).populate("books");
       } catch (error) {
         throw new GraphQLError("Error adding book", {
           extensions: {
@@ -78,7 +78,7 @@ const mutations = {
 
     // Save the book and handle errors
     try {
-      await book.save();
+      (await book.save()).populate("author");
     } catch (error) {
       throw new GraphQLError("Error adding book", {
         extensions: {
@@ -92,7 +92,7 @@ const mutations = {
     // if it fails, delete the book
     try {
       author.books = [...author.books, book._id];
-      await author.save();
+      (await author.save()).populate("books");
     } catch (error) {
       Book.deleteOne({ _id: book._id });
       throw new GraphQLError("Error adding book", {

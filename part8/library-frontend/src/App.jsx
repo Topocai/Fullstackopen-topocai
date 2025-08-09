@@ -21,9 +21,19 @@ const App = () => {
     localStorage.getItem("user-token")
   );
 
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    if (notification !== null)
+      setInterval(() => {
+        setNotification(null);
+      }, 5000);
+  }, [notification]);
+
   const [login, { data }] = useMutation(LOGIN, {
     onError: (error) => {
       console.log("Error when logging in: ", error);
+      setNotification(`${error.message}`);
     },
   });
 
@@ -82,6 +92,7 @@ const App = () => {
             )}
           </div>
         </div>
+        <span>{notification}</span>
         <Routes>
           <Route
             path="/books"
