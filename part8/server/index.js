@@ -78,6 +78,8 @@ const server = new ApolloServer({
 startStandaloneServer(server, {
   listen: { port: 4000 },
   context: async ({ req, status }) => {
+    console.log(`Receibed request: ${req.method}`);
+
     // Using authorization bearer header type, check if user is logged in, and add to the context
 
     const auth = req ? req.headers?.authorization : null;

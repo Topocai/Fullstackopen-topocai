@@ -12,7 +12,10 @@ const Recommended = ({ books, user }) => {
       <div>
         <h2>Recommended for {user.username}</h2>
         <header>favorite genre: {user.favoriteGenre}</header>
-        <Books books={books} filters={[user.favoriteGenre]}></Books>
+        <Books
+          books={books.filter((b) => b.genres.includes(user.favoriteGenre))}
+          hideFilters={true}
+        ></Books>
       </div>
     </LoginMiddleware>
   );

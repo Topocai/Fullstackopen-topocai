@@ -12,12 +12,59 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
 
-import { ALL_AUTHORS, ALL_BOOKS, CURRENT_USER } from "./services/queries";
+import {
+  ALL_AUTHORS,
+  CURRENT_USER,
+  ALL_BOOKS,
+  ALL_BOOKS_BY_GENRE,
+} from "./services/queries";
 import { LOGIN } from "./services/mutations";
 
 const App = () => {
   const authors = useQuery(ALL_AUTHORS);
-  const books = useQuery(ALL_BOOKS);
+
+  //===================================================[ BOOK MANAGEMENT ]==================================================
+
+  /**
+   * Keeps track of selected genres by user and all genres existing on database during application runtime
+   * Define two queries, one for all books and one for all filtered books, using all books query
+   * we get and update allGenres set
+   */
+  const [genresFilter, setGenresFilter] = useState([]);
+  const [allGenres, setAllGenres] = useState(new Set([]));
+
+  const filteredBooks = useQuery(ALL_BOOKS_BY_GENRE, {
+    variables: { genres: genresFilter.length > 0 ? genresFilter : null },
+  });
+
+  const allBooks = useQuery(ALL_BOOKS);
+
+  const onSwitchGenre = (e, genre) => {
+    // Function that switchs the state of a genre in filters
+    // if it already exists in filters, remove it, else add
+    // then we refetch filteres books
+    if (genresFilter.includes(genre)) {
+      setGenresFilter(genresFilter.filter((g) => g !== genre));
+    } else {
+      setGenresFilter(genresFilter.concat(genre));
+    }
+
+    filteredBooks.refetch();
+  };
+
+  useEffect(() => {
+    // Make sure that we update allGenres set during runtime when we fetch all books
+    if (allBooks.data) {
+      const fetchedGenres = new Set(
+        allBooks.data.allBooks.flatMap((b) => b.genres)
+      );
+      setAllGenres((prev) => prev.union(fetchedGenres));
+    }
+  }, [allBooks.data]);
+
+  //===================================================[ BOOK MANAGEMENT ]==================================================
+
+  //===================================================[ LOGIN USER MANAGEMENT ]==================================================
 
   /*
     Login user management, we use apolloClient just for reset cache data when user is loggout
@@ -71,6 +118,8 @@ const App = () => {
     localStorage.removeItem("user-token");
   };
 
+  //===================================================[ LOGIN USER MANAGEMENT ]==================================================
+
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
@@ -123,7 +172,16 @@ const App = () => {
           <Route
             path="/books"
             element={
-              <>{books.data && <Books books={books.data?.allBooks} />}</>
+              <>
+                {
+                  <Books
+                    books={filteredBooks}
+                    genres={allGenres}
+                    onSwitchGenre={onSwitchGenre}
+                    selectedGenres={genresFilter}
+                  />
+                }
+              </>
             }
           />
           <Route
@@ -139,9 +197,9 @@ const App = () => {
             path="/recomendation"
             element={
               <>
-                {books.data && user.data?.me && (
+                {filteredBooks.data && user.data?.me && (
                   <Recommended
-                    books={books.data?.allBooks}
+                    books={allBooks.data?.allBooks}
                     user={user.data?.me}
                   />
                 )}

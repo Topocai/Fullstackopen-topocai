@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { CREATE_BOOK } from "../services/mutations";
-import { ALL_BOOKS } from "../services/queries";
+import { ALL_BOOKS, ALL_BOOKS_BY_GENRE } from "../services/queries";
 import { useMutation } from "@apollo/client";
 
 import LoginMiddleware from "./LoginMiddleware";
@@ -11,7 +11,7 @@ const NewBook = () => {
     onError: (error) => {
       console.error("Error when creating book:", error);
     },
-    refetchQueries: [{ query: ALL_BOOKS }],
+    refetchQueries: [{ query: ALL_BOOKS, ALL_BOOKS_BY_GENRE }],
   });
 
   const [title, setTitle] = useState("");
