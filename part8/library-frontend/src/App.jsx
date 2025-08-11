@@ -21,6 +21,8 @@ import {
 import { LOGIN } from "./services/mutations";
 
 const App = () => {
+  const apolloClient = useApolloClient();
+
   const authors = useQuery(ALL_AUTHORS);
 
   //===================================================[ BOOK MANAGEMENT ]==================================================
@@ -62,6 +64,21 @@ const App = () => {
     }
   }, [allBooks.data]);
 
+  const onNewBook = (book) => {
+    // Hard-write the new book in cache if has at least one genre in filter
+    // to work, it is defined in typePolicies at apolloClient cache declaration, see main.jsx
+    // manual writing to ALL_BOOKS is not needed because it works with refetchQuery at mutation
+    if (book.genres.filter((g) => genresFilter.includes(g)).length > 0) {
+      apolloClient.writeQuery({
+        query: ALL_BOOKS_BY_GENRE,
+        data: {
+          allBooks: [book],
+        },
+        variables: { genres: genresFilter },
+      });
+    }
+  };
+
   //===================================================[ BOOK MANAGEMENT ]==================================================
 
   //===================================================[ LOGIN USER MANAGEMENT ]==================================================
@@ -74,7 +91,6 @@ const App = () => {
     with an effect hook we save the token to localstorage and application state during runtime,
     this effect is perform via login mutation,
   */
-  const apolloClient = useApolloClient();
 
   // save user token to application state
   const [userToken, setUserToken] = useState(
@@ -192,7 +208,10 @@ const App = () => {
               </>
             }
           />
-          <Route path="/addBook" element={<NewBook />} />
+          <Route
+            path="/addBook"
+            element={<NewBook onNewBookAdded={onNewBook} />}
+          />
           <Route
             path="/recomendation"
             element={

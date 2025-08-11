@@ -25,8 +25,23 @@ const httpLink = createHttpLink({
   uri: "http://localhost:4000",
 });
 
+const typePolicies = {
+  Query: {
+    fields: {
+      allBooks: {
+        keyArgs: ["genres"],
+        merge(existing = [], incoming) {
+          return [...existing, ...incoming]; // using for mergin new book at existing book filtered list in cache
+        },
+      },
+    },
+  },
+};
+
 const apolloClient = new ApolloClient({
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies,
+  }),
   link: authLink.concat(httpLink),
 });
 
