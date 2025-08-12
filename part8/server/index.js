@@ -1,10 +1,21 @@
 const { ApolloServer } = require("@apollo/server");
-const { startStandaloneServer } = require("@apollo/server/standalone");
+const { expressMiddleware } = require("@as-integrations/express5");
+const {
+  ApolloServerPluginDrainHttpServer,
+} = require("@apollo/server/plugin/drainHttpServer");
+const { makeExecutableSchema } = require("@graphql-tools/schema");
+
+const express = require("express");
+const cors = require("cors");
+const http = require("http");
+
+const { WebSocketServer } = require("ws");
+const { useServer } = require("graphql-ws/use/ws");
 
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 
+const mongoose = require("mongoose");
 const UserModel = require("./models/User");
 
 mongoose
@@ -15,80 +26,96 @@ mongoose
 //==================================[graphql definitions, resolvers, queries, mutations, etc.]==================================
 const {
   definitions: bookDefinitions,
-  queries: bookQueries,
-  queryResolver: bookQueriesResolver,
-  mutationsDef: bookMutationsDef,
-  mutations: bookMutations,
+  resolvers: bookResolvers,
 } = require("./definitions/books");
 const {
   definitions: authorDefinitions,
-  queries: authorQueries,
-  queryResolver: authorQueriesResolver,
-  Author,
-  mutationsDef: authorMutationsDef,
-  mutations: authorMutations,
+  resolvers: authorResolvers,
 } = require("./definitions/authors");
 
 const {
   definitions: userDefinitions,
-  queries: userQueries,
-  queryResolver: userQueriesResolver,
-  mutationsDef: userMutationsDef,
-  mutations: userMutations,
+  resolvers: userResolvers,
 } = require("./definitions/users");
 
-//==================================[graphql definitions, resolvers, queries, mutations, etc.]==================================
-
 const typeDefs = `
-${bookDefinitions}
-${authorDefinitions}
-${userDefinitions}
   type Query {
-    ${bookQueries}
-    ${authorQueries}
-    ${userQueries}
+    _empty: String!
   }
-  
+
   type Mutation {
-    ${bookMutationsDef}
-    ${authorMutationsDef}
-    ${userMutationsDef}
+    _empty: String!
+  }
+
+  type Subscription {
+    _empty: String!
   }
 `;
 
-const resolvers = {
-  Query: {
-    ...bookQueriesResolver,
-    ...authorQueriesResolver,
-    ...userQueriesResolver,
-  },
-  Mutation: {
-    ...bookMutations,
-    ...authorMutations,
-    ...userMutations,
-  },
-  Author,
+const { merge } = require("lodash");
+
+const resolvers = {};
+
+//==================================[graphql definitions, resolvers, queries, mutations, etc.]==================================
+
+const userContext = async ({ req }) => {
+  // Using authorization bearer header type, check if user is logged in, and add to the context
+
+  const auth = req ? req.headers?.authorization : null;
+  if (auth && auth.startsWith("Bearer ")) {
+    const decodedToken = jwt.verify(auth.substring(7), process.env.SECRET);
+    const loggedUser = await UserModel.findById(decodedToken.id);
+    return { loggedUser };
+  }
 };
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+const start = async () => {
+  const app = express();
 
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-  context: async ({ req, status }) => {
-    console.log(`Receibed request: ${req.method}`);
+  const httpServer = http.createServer(app);
 
-    // Using authorization bearer header type, check if user is logged in, and add to the context
+  const wServer = new WebSocketServer({
+    server: httpServer,
+    path: "/",
+  });
 
-    const auth = req ? req.headers?.authorization : null;
-    if (auth && auth.startsWith("Bearer ")) {
-      const decodedToken = jwt.verify(auth.substring(7), process.env.SECRET);
-      const loggedUser = await UserModel.findById(decodedToken.id);
-      return { loggedUser };
-    }
-  },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`);
-});
+  const schema = makeExecutableSchema({
+    typeDefs: [typeDefs, bookDefinitions, authorDefinitions, userDefinitions],
+    resolvers: merge(resolvers, bookResolvers, authorResolvers, userResolvers),
+  });
+  const serverCleanup = useServer({ schema }, wServer);
+
+  const apolloServer = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
+  });
+
+  await apolloServer.start();
+
+  app.use(cors());
+  app.use(express.json());
+
+  app.use(
+    "/",
+    expressMiddleware(apolloServer, {
+      context: userContext,
+    })
+  );
+
+  httpServer.listen(4000, () => {
+    console.log("Apollo Server on http://localhost:4000");
+  });
+};
+
+start();

@@ -12,54 +12,52 @@ const definitions = `
         books: [Book!]
         id: ID!
     }
-`;
 
-const mutationsDef = `
-    editAuthor(
-        name: String!
-        setBornTo: Int!
-    ): Author
-`;
-
-const queries = `authorCount: Int!\nallAuthors: [Author!]!`;
-
-const queryResolver = {
-  authorCount: async () => AuthorModel.collection.countDocuments(),
-  allAuthors: async () => AuthorModel.find({}).populate("books"),
-};
-
-const mutations = {
-  editAuthor: async (root, args, context) => {
-    if (!context.loggedUser) {
-      throw new GraphQLError("Not logged in", {
-        extensions: { code: "NOT_LOGGED_IN" },
-      });
+    extend type Query {
+        authorCount: Int!\nallAuthors: [Author!]!
     }
 
-    const author = await AuthorModel.findOneAndUpdate(
-      { name: args.name },
-      { born: args.setBornTo },
-      { new: true }
-    );
-    if (!author) {
-      throw new GraphQLError("Author not found", {
-        extensions: { code: "AUTHOR_NOT_FOUND" },
-      });
+    extend type Mutation {
+        editAuthor(
+            name: String!
+            setBornTo: Int!
+        ): Author
     }
-    return author.populate("books");
+`;
+
+const resolvers = {
+  Query: {
+    authorCount: async () => AuthorModel.collection.countDocuments(),
+    allAuthors: async () => AuthorModel.find({}).populate("books"),
   },
-};
+  Mutation: {
+    editAuthor: async (root, args, context) => {
+      if (!context.loggedUser) {
+        throw new GraphQLError("Not logged in", {
+          extensions: { code: "NOT_LOGGED_IN" },
+        });
+      }
 
-const Author = {
-  bookCount: (root) =>
-    Book.find({ author: root.id }).then((books) => books.length),
+      const author = await AuthorModel.findOneAndUpdate(
+        { name: args.name },
+        { born: args.setBornTo },
+        { new: true }
+      );
+      if (!author) {
+        throw new GraphQLError("Author not found", {
+          extensions: { code: "AUTHOR_NOT_FOUND" },
+        });
+      }
+      return author.populate("books");
+    },
+  },
+  Author: {
+    bookCount: (root) =>
+      Book.find({ author: root.id }).then((books) => books.length),
+  },
 };
 
 module.exports = {
   definitions,
-  queries,
-  queryResolver,
-  Author,
-  mutationsDef,
-  mutations,
+  resolvers,
 };
