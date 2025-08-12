@@ -10,7 +10,12 @@ import { useEffect, useState } from "react";
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import {
+  useQuery,
+  useMutation,
+  useApolloClient,
+  useSubscription,
+} from "@apollo/client";
 
 import {
   ALL_AUTHORS,
@@ -19,6 +24,7 @@ import {
   ALL_BOOKS_BY_GENRE,
 } from "./services/queries";
 import { LOGIN } from "./services/mutations";
+import { BOOK_ADDED } from "./services/suscriptions";
 
 const App = () => {
   const apolloClient = useApolloClient();
@@ -40,6 +46,15 @@ const App = () => {
   });
 
   const allBooks = useQuery(ALL_BOOKS);
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const newBook = data.data.bookAdded;
+      console.log("newBook", newBook);
+
+      onNewBook(newBook);
+    },
+  });
 
   const onSwitchGenre = (e, genre) => {
     // Function that switchs the state of a genre in filters
@@ -65,18 +80,49 @@ const App = () => {
   }, [allBooks.data]);
 
   const onNewBook = (book) => {
-    // Hard-write the new book in cache if has at least one genre in filter
+    // Hard-write the new book in cache of all books and in filtered list if has at least one genre in filter or filter is empty
     // to work, it is defined in typePolicies at apolloClient cache declaration, see main.jsx
-    // manual writing to ALL_BOOKS is not needed because it works with refetchQuery at mutation
-    if (book.genres.filter((g) => genresFilter.includes(g)).length > 0) {
-      apolloClient.writeQuery({
-        query: ALL_BOOKS_BY_GENRE,
-        data: {
-          allBooks: [book],
+
+    // Before 8.25, I'm not sure how it work exactly, I wanted to edit the cache in some many ways, but for some reason
+    // event if the cache was edited the view was not updated, so I ask to IA and they suggested to use modify method and refactored my code
+    // but I don't understand completly how modify method works
+    if (
+      genresFilter.length === 0 ||
+      book.genres.some((g) => genresFilter.includes(g))
+    ) {
+      apolloClient.cache.modify({
+        fields: {
+          allBooks(existing = [], { readField, storeFieldName }) {
+            const isSameVariables = storeFieldName.includes(
+              JSON.stringify({
+                genres: genresFilter.length > 0 ? genresFilter : null,
+              })
+            );
+            if (!isSameVariables) return existing;
+
+            const exists = existing.some(
+              (ref) => readField("title", ref) === book.title
+            );
+            if (exists) return existing;
+
+            return [...existing, book];
+          },
         },
-        variables: { genres: genresFilter },
       });
     }
+
+    apolloClient.cache.modify({
+      fields: {
+        allBooks(existing = [], { readField }) {
+          const exists = existing.some(
+            (ref) => readField("title", ref) === book.title
+          );
+          if (exists) return existing;
+
+          return [...existing, book];
+        },
+      },
+    });
   };
 
   //===================================================[ BOOK MANAGEMENT ]==================================================

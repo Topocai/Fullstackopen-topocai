@@ -1,20 +1,15 @@
 import { useState } from "react";
 
-import PropTypes from "prop-types";
-
 import { CREATE_BOOK } from "../services/mutations";
-import { ALL_BOOKS, ALL_BOOKS_BY_GENRE } from "../services/queries";
 import { useMutation } from "@apollo/client";
 
 import LoginMiddleware from "./LoginMiddleware";
 
-const NewBook = ({ onNewBookAdded }) => {
+const NewBook = () => {
   const [createBook, { error }] = useMutation(CREATE_BOOK, {
     onError: (error) => {
       console.error("Error when creating book:", error);
     },
-    onCompleted: (data) => onNewBookAdded(data.addBook),
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_BOOKS_BY_GENRE }],
   });
 
   const [title, setTitle] = useState("");
@@ -94,10 +89,6 @@ const NewBook = ({ onNewBookAdded }) => {
       </div>
     </LoginMiddleware>
   );
-};
-
-NewBook.propTypes = {
-  onNewBookAdded: PropTypes.func.isRequired,
 };
 
 export default NewBook;
