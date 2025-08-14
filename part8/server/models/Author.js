@@ -16,5 +16,6 @@ const authorSchema = new mongoose.Schema({
       ref: "Book",
     },
   ],
+  bookCount: Number,
 });
 module.exports = mongoose.model("Author", authorSchema);

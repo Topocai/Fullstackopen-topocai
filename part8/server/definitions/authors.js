@@ -15,6 +15,7 @@ const definitions = `
 
     extend type Query {
         authorCount: Int!\nallAuthors: [Author!]!
+        updateAuthors: [Author!]
     }
 
     extend type Mutation {
@@ -27,8 +28,18 @@ const definitions = `
 
 const resolvers = {
   Query: {
+    updateAuthors: async () => {
+      const authors = await AuthorModel.find({}).populate("books");
+      for (const author of authors) {
+        author.bookCount = author.books.length;
+        await author.save();
+      }
+      return authors;
+    },
     authorCount: async () => AuthorModel.collection.countDocuments(),
-    allAuthors: async () => AuthorModel.find({}).populate("books"),
+    allAuthors: async () => {
+      return AuthorModel.find({}).populate("books");
+    },
   },
   Mutation: {
     editAuthor: async (root, args, context) => {
@@ -50,10 +61,6 @@ const resolvers = {
       }
       return author.populate("books");
     },
-  },
-  Author: {
-    bookCount: (root) =>
-      Book.find({ author: root.id }).then((books) => books.length),
   },
 };
 

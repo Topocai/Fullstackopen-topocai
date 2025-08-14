@@ -86,11 +86,13 @@ const resolvers = {
         }
       }
 
-      const book = new Book({ ...args, author: author._id });
+      const book = await new Book({ ...args, author: author._id }).populate(
+        "author"
+      );
 
       // Save the book and handle errors
       try {
-        (await book.save()).populate("author");
+        await book.save();
       } catch (error) {
         throw new GraphQLError("Error adding book", {
           extensions: {
@@ -105,7 +107,8 @@ const resolvers = {
       // if it fails, delete the book
       try {
         author.books = [...author.books, book._id];
-        (await author.save()).populate("books");
+        author.bookCount = author.books.length;
+        await author.save();
       } catch (error) {
         Book.deleteOne({ _id: book._id });
         throw new GraphQLError("Error adding book", {
